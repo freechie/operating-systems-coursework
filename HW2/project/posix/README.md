@@ -1,15 +1,22 @@
-Completing this project will require writing the following C files:
+# CPU scheduling
 
-schedule_fcfs.c
-schedule_sjf.c
-schedule_rr.c
-schedule_priority.c
-schedule_priority_rr.c
+This directory contains implementations of five CPU-scheduling algorithms:
 
-The supporting files invoke the appropriate scheduling algorithm. 
+- first-come, first-served (`fcfs`)
+- shortest job first (`sjf`)
+- round robin (`rr`)
+- priority (`priority`)
+- priority with round robin (`priority_rr`)
 
-For example, to build the FCFS scheduler, enter
+Build every scheduler with `make`, or build one target such as `make fcfs`.
+Each executable accepts a CSV workload containing a task name, priority, and
+CPU burst:
 
-make fcfs
+```sh
+./fcfs sample_tasks.txt
+./rr sample_tasks.txt
+```
 
-which builds the fcfs executable file.
+`sample_tasks.txt` is an original workload created for this public repository.
+The driver, list, virtual CPU, headers, and build file are an original harness
+that replaces the course-provided scaffold.

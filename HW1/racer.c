@@ -10,6 +10,12 @@
 
 int main(int argc, char *argv[]) 
 {
+	if (argc != 4)
+	{
+		fprintf(stderr, "Usage: %s <racer1> <racer2> <delay>\n", argv[0]);
+		return EXIT_FAILURE;
+	}
+
 	printf("Starting Racers...\n\n");
 	sleep(2);
 	printf("%s,%s,%s\n\n",argv[1],argv[2],argv[3]);

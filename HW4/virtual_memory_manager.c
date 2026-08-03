@@ -45,19 +45,18 @@ typedef struct
 {
     int page_number;
     int frame_number;
-    int timestamp;
+    bool valid;
 } TLBEntry; // 12 bytes
 
 // Declare global data structures and variables
-PageTableEntry page_table[NUM_PAGES];
-TLBEntry tlb[TLB_SIZE];
-char physical_memory[NUM_FRAMES * PAGE_SIZE];
-bool frame_allocated[NUM_FRAMES];
-int tlb_tail = 0;
-int page_faults = 0;
-int tlb_hits = 0;
-int tlb_misses = 0;
-int total_addresses = 0;
+static PageTableEntry page_table[NUM_PAGES];
+static TLBEntry tlb[TLB_SIZE];
+static char physical_memory[NUM_FRAMES * PAGE_SIZE];
+static bool frame_allocated[NUM_FRAMES];
+static int tlb_tail = 0;
+static int page_faults = 0;
+static int tlb_hits = 0;
+static int total_addresses = 0;
 // Handles a page fault for the given page number
 int handle_page_fault(int page_number)
 {
@@ -107,8 +106,9 @@ int search_tlb(int page_number)
 {
     for (int i = 0; i < TLB_SIZE; i++)
     {
-        if (tlb[i].page_number == page_number)
+        if (tlb[i].valid && tlb[i].page_number == page_number)
         {
+            tlb_hits++;
             return tlb[i].frame_number;
         }
     }
@@ -121,16 +121,18 @@ void update_tlb(int page_number, int frame_number)
 {
     tlb[tlb_tail].page_number = page_number;
     tlb[tlb_tail].frame_number = frame_number;
+    tlb[tlb_tail].valid = true;
     tlb_tail = (tlb_tail + 1) % TLB_SIZE;
 }
 
 // Extracts the page number and offset from the logical address
 void extract_page_number_and_offset(int logical_address)
 {
-    int page_number = (logical_address & 0x00FF) >> 8;
-    int offset = logical_address & 0x00FF;
+    int page_number = (logical_address & PAGE_NUMBER_MASK) >> PAGE_OFFSET_BITS;
+    int offset = logical_address & OFFSET_MASK;
 
-    printf("Logical Address: %d, Page Number: %d\n", logical_address, page_number);
+    printf("Logical Address: %d, Page Number: %d, Offset: %d\n",
+           logical_address, page_number, offset);
 }
 // Main function of the program
 int main(int argc, char *argv[])
@@ -173,7 +175,6 @@ int main(int argc, char *argv[])
             }
             // Update the TLB with the new page number and frame number
             update_tlb(page_number, frame_number);
-            tlb_misses++;
         }
         // Calculate the physical address using the frame number and page offset
         int physical_address = (frame_number << PAGE_OFFSET_BITS) | page_offset;
@@ -181,14 +182,23 @@ int main(int argc, char *argv[])
 
         // Output the results
         printf("Logical address: %d, Physical address: %d, Value: %d\n", logical_address, physical_address, value);
+        total_addresses++;
     }
 
     // Close the address file
     fclose(address_file);
 
     // Calculate and output the page fault rate and TLB hit rate
-    printf("Page fault rate: %.2f%%\n", (double)page_faults * 100 / (page_faults + tlb_misses));
-    printf("TLB hit rate: %.2f%%\n", (double)tlb_misses - page_faults * 100 / (page_faults + tlb_misses));
+    if (total_addresses == 0)
+    {
+        printf("Page fault rate: 0.00%%\n");
+        printf("TLB hit rate: 0.00%%\n");
+    }
+    else
+    {
+        printf("Page fault rate: %.2f%%\n", (double)page_faults * 100 / total_addresses);
+        printf("TLB hit rate: %.2f%%\n", (double)tlb_hits * 100 / total_addresses);
+    }
 
     return 0;
 }

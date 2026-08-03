@@ -45,7 +45,7 @@ void add(char *name, int priority, int burst)
     }
 }
 
-void schedule()
+void schedule(void)
 {
     struct node *current = head;
     struct node *ref = head;
@@ -174,6 +174,6 @@ void schedule()
 
     WaitTime = turnaroundtime - totalburst;
     printf("The average turnaround time is : %f time units \n", turnaroundtime / atomic_load(&num));
-    printf("The average turnaround time is : %f time units \n", ResponseTime / atomic_load(&num));
-    printf("The average turnaround time is : %f time units \n", WaitTime / atomic_load(&num));
+    printf("The average Response Time is : %f time units \n", ResponseTime / atomic_load(&num));
+    printf("The average Wait Time is : %f time units \n", WaitTime / atomic_load(&num));
 }

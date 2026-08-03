@@ -44,7 +44,7 @@ void add(char *name, int priority, int burst)
     }
 }
 
-void schedule()
+void schedule(void)
 {
     atomic_int num = 0;
 

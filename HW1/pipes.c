@@ -15,8 +15,6 @@ int main(int argc, char *argv[])
 
     int pipefd[2];
     struct timeval start_time, end_time;
-    pid_t pid;
-
     // create pipe for IPC
     if (pipe(pipefd) == -1)
     {
@@ -33,6 +31,8 @@ int main(int argc, char *argv[])
     }
     else if (pid == 0)
     { // Child process
+        close(pipefd[0]);
+
         // record starting time using gettimeofday()
         gettimeofday(&start_time, NULL);
         // write starting time to write end of pipe
@@ -42,12 +42,7 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        // close read end of pipe since not needed in child process
-        if (close(pipefd[0]) == -1)
-        {
-            perror("close");
-            exit(1);
-        }
+        close(pipefd[1]);
 
         // execvp command line arg provided
         if (execvp(argv[1], &argv[1]) == -1)
@@ -59,16 +54,26 @@ int main(int argc, char *argv[])
     else
     { // Parent Process
         int status;
-        // wait for child process to terminate
-        waitpid(pid, &status, 0);
+        close(pipefd[1]);
+
+        // receive the child's start time
+        if (read(pipefd[0], &start_time, sizeof(start_time)) != sizeof(start_time))
+        {
+            perror("read");
+            exit(1);
+        }
+        close(pipefd[0]);
+
+        // wait for child process to terminate and record the end time
+        if (waitpid(pid, &status, 0) == -1)
+        {
+            perror("waitpid");
+            exit(1);
+        }
+        gettimeofday(&end_time, NULL);
+
         if (WIFEXITED(status))
         {
-            // read ending time from read end of pipe
-            if (read(pipefd[0], &end_time, sizeof(struct timeval)) == -1)
-            {
-                perror("read");
-                exit(1);
-            }
             // calculate elapsed time and print it
             double elapsed_time = (end_time.tv_sec - start_time.tv_sec) + (end_time.tv_usec - start_time.tv_usec) / 1000000.0;
             printf("Elapsed time: %f\n", elapsed_time);
@@ -78,11 +83,6 @@ int main(int argc, char *argv[])
             // print error message if child process terminated abnormally
             fprintf(stderr, "Child process terminated abnormally\n");
             exit(1);
-        }
-        if (close(pipefd[0]) == -1 || close(pipefd[1]) == -1)
-        {
-            // close both ends of pipe
-            perror("close");
         }
     }
 

@@ -55,7 +55,7 @@ void add(char *name, int priority, int burst)
     }
 }
 
-void schedule()
+void schedule(void)
 {
     current = head;
     struct node *ref = head;

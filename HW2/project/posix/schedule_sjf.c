@@ -120,7 +120,7 @@ void add(char *name, int priority, int burst)
 }
 
 // invoke the scheduler
-void schedule()
+void schedule(void)
 {
     float turnaroundtime = 0;
     float ResponseTime = 0;

@@ -46,7 +46,7 @@ void add(char *name, int priority, int burst)
 }
 
 // Invoke the scheduler
-void schedule()
+void schedule(void)
 {
     int final = 0;
 

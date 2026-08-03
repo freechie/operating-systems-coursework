@@ -19,9 +19,8 @@ int main (int argc, char *argv[])
 {	
 	int index, i, result = 1;
 	char *countriesArr[] = {"usa", "cuba", "colombia", "mexico", "china", "vietnam", "japan", "bhutan", "nepal", "tibet", "pakistan", "italy", "canada"};
-	int parentpid, country1pid, country2pid, country3pid;
+	int parentpid;
 	char asciiparentpid[100];
-	int wstatus;
 
 	int countries[PROCESS_NUM];
 	int pipes[PROCESS_NUM + 1][2];
