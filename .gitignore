@@ -3,3 +3,6 @@
 *.out
 *.class
 *.exe
+
+# Material selected for deletion
+/HW1/HW1.pdf
